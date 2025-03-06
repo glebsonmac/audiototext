@@ -4,17 +4,17 @@ import (
 	"context"
 	"log"
 
-	pb "github.com/glebsonmac/audiototext/pkg/pb/whisper"
+	pb "github.com/glebsonmac/audiototext/pkg/pb/audio"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-type whisperClient struct {
+type WhisperClient struct {
 	conn   *grpc.ClientConn
-	client pb.whisperServiceClient
+	client pb.AudioServiceClient
 }
 
-func NewWhisperClient(addr string) *whisperClient {
+func NewWhisperClient(addr string) *WhisperClient {
 	conn, err := grpc.Dial(addr,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
@@ -22,12 +22,12 @@ func NewWhisperClient(addr string) *whisperClient {
 		log.Fatalf("failed to connect to whisper service: %v", err)
 	}
 
-	client := pb.NewWhisperServiceClient(conn)
-	return &whisperClient{conn, client}
+	client := pb.NewAudioServiceClient(conn)
+	return &WhisperClient{conn, client}
 
 }
-func (c *whisperClient) Transcribe(ctx context.Context, audioData []byte, audioFormat pb.AudioFormat) (string, error) {
-	resp, err := c.client.Transcribe(ctx, &pb.TranscribeRequest{
+func (c *WhisperClient) Transcribe(ctx context.Context, audioData []byte, audioFormat pb.AudioFormat) (string, error) {
+	resp, err := c.client.TranscribeAudio(ctx, &pb.TranscribeRequest{
 		AudioData:   audioData,
 		AudioFormat: audioFormat,
 	})

@@ -5,7 +5,7 @@ import (
 	"net"
 
 	"github.com/glebsonmac/audiototext/internal/handler"
-	pb "github.com/glebsonmac/audiototext/internal/handler"
+	pb "github.com/glebsonmac/audiototext/pkg/pb/audio"
 	"google.golang.org/grpc"
 )
 
@@ -16,7 +16,7 @@ func main() {
 	// Inicializa o servidor gRPC
 	grpcServer := grpc.NewServer()
 	audioHandler := handler.NewAudioHandler(whisperAddr)
-	pb.ReristerAudioServiceServer(grpcServer, audioHandler)
+	pb.RegisterAudioServiceServer(grpcServer, audioHandler)
 
 	//iniciar listener
 
