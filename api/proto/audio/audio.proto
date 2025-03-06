@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package audio;
+
+option go_package = "pkg/pb/audio";
+
+service AudioService {
+rpc TranscribeAudio(TranscribeRequest) returns (TranscribeResponse) {}
+}
+
+message TranscribeRequest {
+    bytes audio_data = 1;
+    string audio_format = 2;
+}
+
+message TranscribeResponse {
+    string transcript =1;
+    string error =2;
+}
