@@ -4,21 +4,32 @@ services:
   go-server:
     build: ./go-server
     ports:
-      - "50051:50051" # gRPC
-      - "8080:8080" # Web
+      - "50051:50051"
     environment:
       - WHISPER_ENDPOINT=http://whisper:9083/inference
-    volumes:
-      - ./go-server/client/bin:/app/bin # Volume para o binário do client
+    networks:
+      - whisper-net
+
+  web-server:
+    build: ./go-server
+    command: /web-server
+    ports:
+      - "8080:8080"
     depends_on:
-      - whisper
+      - go-server
     networks:
       - whisper-net
 
   whisper:
     build: ./whisper-server
-    ports:
-      - "9083:9083"
+    networks:
+      - whisper-net
+
+  client:
+    build: ./go-server
+    command: /client -server go-server:50051
+    depends_on:
+      - go-server
     networks:
       - whisper-net
 

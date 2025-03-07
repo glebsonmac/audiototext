@@ -1,5 +1,6 @@
 FROM ubuntu:22.04
 
+# 1. Instalar dependências
 RUN apt-get update && apt-get install -y \
     git \
     make \
@@ -7,17 +8,26 @@ RUN apt-get update && apt-get install -y \
     ffmpeg \
     python3 \
     g++ \
-    libssl-dev
+    cmake \
+    libopenblas-dev
 
-# Build whisper.cpp
+# 2. Clonar repositório com versão específica
 RUN git clone https://github.com/ggerganov/whisper.cpp && \
     cd whisper.cpp && \
-    make server
+    git checkout v1.5.0  # Versão estável
 
-# Download model
+# 3. Compilar com CMake
+RUN cd whisper.cpp && \
+    mkdir build && \
+    cd build && \
+    cmake .. && \
+    make -j4
+
+# 4. Baixar modelo
 RUN mkdir -p models && \
-    curl -L -o models/large-v3-turbo-q5_0.bin \
-    https://huggingface.co/ggerganov/whisper.cpp/resolve/main/large-v3-turbo-q5_0.bin
+    curl -L -o models/ggml-large-v3-turbo-q5_0.bin \
+    https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-large-v3-turbo-q5_0.bin
 
+# 5. Expor porta e configurar entrypoint
 EXPOSE 9083
-CMD ["/whisper.cpp/server", "-m", "/models/large-v3-turbo-q5_0.bin", "--port", "9083", "--convert"]
+CMD ["/whisper.cpp/build/bin/server", "-m", "/models/ggml-large-v3-turbo-q5_0.bin", "--port", "9083", "--convert"]
