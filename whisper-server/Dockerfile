@@ -30,4 +30,4 @@ RUN mkdir -p models && \
 
 # 5. Expor porta e configurar entrypoint
 EXPOSE 9083
-CMD ["/whisper.cpp/build/bin/server", "-m", "/models/ggml-large-v3-turbo-q5_0.bin", "--port", "9083", "--convert"]
+CMD ["/whisper.cpp/build/bin/main", "-m", "/models/ggml-large-v3-turbo-q5_0.bin", "--server", "--port", "9083"]

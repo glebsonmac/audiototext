@@ -1,48 +1,57 @@
 # Build stage
-FROM golang:1.21-alpine AS builder
+FROM golang:1.23.4-alpine AS builder
 
+# Configurar ambiente Go
+ENV GO111MODULE=on \
+    GOPROXY=https://proxy.golang.org,direct
+
+# Instalar dependências de sistema
 RUN apk add --no-cache \
     protobuf-dev \
     git \
     make \
     curl
 
-# Configurar módulo Go
-ENV GO111MODULE=on
-
-# Instalar dependências do protobuf
-RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@latest && \
-    go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
-
-ENV PATH $PATH:/root/go/bin
-
+# Criar diretório de trabalho
 WORKDIR /app
 
-# Copiar apenas os arquivos necessários primeiro
+# 1. Copiar apenas os arquivos de módulo primeiro
 COPY go.mod go.sum ./
-RUN go mod download
 
-# Copiar o restante do código
+# 2. Validar estrutura do módulo
+RUN test -f go.mod && echo "Módulo Go válido" || (echo "ERRO: go.mod não encontrado" && exit 1)
+
+# 3. Baixar dependências com verificação
+RUN go mod download -x 2>&1 | tee /tmp/mod-download.log
+
+# 4. Instalar protoc plugins
+RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.33.0 && \
+    go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.3.0
+
+# 5. Copiar o resto do código
 COPY . .
 
-# Gerar código gRPC
-RUN mkdir -p pkg/pb/audio && \
-    protoc --go_out=./pkg/pb --go-grpc_out=./pkg/pb \
-    --proto_path=./api/proto/audio \
-    ./api/proto/audio/audio.proto
+# Build de todos componentes
 
-# Build dos componentes
-RUN CGO_ENABLED=0 GOOS=linux go build -o /server ./cmd/server
-RUN CGO_ENABLED=0 GOOS=linux go build -o /web-server ./web/server
-RUN CGO_ENABLED=0 GOOS=linux go build -o /client ./cmd/client
+#Build dos componentes com caminhos absolutos
+RUN CGO_ENABLED=0 GOOS=linux go build -o /app/bin/server ./cmd/server
+RUN CGO_ENABLED=0 GOOS=linux go build -o /app/bin/web-server ./cmd/web/server
+RUN CGO_ENABLED=0 GOOS=linux go build -o /app/bin/client ./cmd/client
 
 # Runtime stage
 FROM alpine:3.18
 
-COPY --from=builder /server /server
-COPY --from=builder /web-server /web-server
-COPY --from=builder /client /client
-COPY --from=builder /app/web/static /web/static
+# 1. Criar diretório para os binários
+RUN mkdir -p /app/bin
 
+# 2. Copiar binários do estágio builder
+COPY --from=builder /app/bin/ /app/bin/
+
+# 3. Dar permissão de execução
+RUN chmod +x /app/bin/*
+
+# 4. Expor portas
 EXPOSE 50051 8080
-CMD ["/server"]
+
+# 5. Definir comando de execução com caminho absoluto
+CMD ["/app/bin/server"]

@@ -22,8 +22,13 @@ services:
 
   whisper:
     build: ./whisper-server
-    networks:
-      - whisper-net
+    ports:
+      - "9083:9083" # Garantir mapeamento de portas
+    healthcheck:
+      test: [ "CMD-SHELL", "curl --fail http://localhost:9083/health || exit 1" ]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
   client:
     build: ./go-server
