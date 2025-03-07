@@ -7,7 +7,7 @@ import (
 	"os"
 	"time"
 
-	pb "github.com/glebsonmac/audiototext/go-server/pkg/pb/audio"
+	pb "github.com/glebsonmac/audiototext/pkg/pb/audio"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
