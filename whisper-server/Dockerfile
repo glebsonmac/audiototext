@@ -16,8 +16,8 @@ RUN git clone https://github.com/ggerganov/whisper.cpp && \
 
 # Download model
 RUN mkdir -p models && \
-    curl -L -o models/ggml-large-v3.bin \
-    https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-large-v3.bin
+    curl -L -o models/large-v3-turbo-q5_0.bin \
+    https://huggingface.co/ggerganov/whisper.cpp/resolve/main/large-v3-turbo-q5_0.bin
 
 EXPOSE 9083
-CMD ["/whisper.cpp/server", "-m", "/models/ggml-large-v3.bin", "--port", "9083", "--convert"]
+CMD ["/whisper.cpp/server", "-m", "/models/large-v3-turbo-q5_0.bin", "--port", "9083", "--convert"]

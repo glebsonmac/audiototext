@@ -19,11 +19,21 @@ Servidor gRPC em Go que recebe arquivos de áudio e utiliza o Whisper (OpenAI) p
 ### Arquitetura
 ```
 .
-├── api/              # Definições Protobuf
-├── cmd/              # Entrypoints
-├── internal/         # Lógica interna
-├── pkg/              # Código gerado
-└── client/           # Cliente de teste
+├── docker-compose.yml
+├── go-server/
+│   ├── Dockerfile
+│   ├── cmd/
+│   │   └── server/
+│   │   |    └── main.go
+│   |   ├── client/
+│   │   |   └── main.go
+│   ├── web/
+│   │   ├── index.html
+│   │   └── server/
+│   │       └── main.go
+│   └── pkg/
+└── whisper-server/
+    └── Dockerfile
 ```
 
 ### Pré-requisitos
