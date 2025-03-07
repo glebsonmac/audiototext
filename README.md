@@ -28,7 +28,8 @@ Servidor gRPC em Go que recebe arquivos de áudio e utiliza o Whisper (OpenAI) p
 │   |   ├── client/
 │   │   |   └── main.go
 │   ├── web/
-│   │   ├── index.html
+│   │   └── static/
+│   │       └── index.html
 │   │   └── server/
 │   │       └── main.go
 │   └── pkg/
