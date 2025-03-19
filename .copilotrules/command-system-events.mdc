@@ -1,0 +1,6 @@
+---
+description: Quando falar da de comandos e da pasta .fcai
+globs: 
+alwaysApply: false
+---
+ Leia o arquivo de [commands.md](mdc:.fcai/commands.md) para entender a regra de comandos
