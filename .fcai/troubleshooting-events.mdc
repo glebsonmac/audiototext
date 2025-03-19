@@ -1,9 +1,4 @@
 ---
-description: when having trouble to solve a problem make sure
-globs: 
-alwaysApply: true
----
----
 description: Quando encontrar problemas durante o desenvolvimento
 globs: **/*
 alwaysApply: true

@@ -1,6 +1,55 @@
 ---
-description: Quando falar da de comandos e da pasta .fcai
-globs: 
-alwaysApply: false
+description: Quando trabalhar com o sistema de comandos
+globs: **/*
+alwaysApply: true
 ---
- Leia o arquivo de [commands.md](mdc:.fcai/commands.md) para entender a regra de comandos
+# Ao trabalhar com o sistema de comandos
+
+## Comandos de Desenvolvimento
+- `go build` - Compilar o projeto
+- `go test ./...` - Executar testes
+- `go run cmd/server/main.go` - Executar servidor gRPC
+- `go run cmd/wasm/main.go` - Compilar WebAssembly
+- `protoc --go_out=. --go-grpc_out=. proto/*.proto` - Gerar código gRPC
+- `go run cmd/hardware/main.go` - Detectar hardware
+- `go run cmd/models/main.go` - Gerenciar modelos ONNX
+
+## Comandos de Monitoramento
+- `go tool pprof` - Análise de performance
+- `go test -bench=.` - Executar benchmarks
+- `go test -coverprofile=coverage.out` - Gerar relatório de cobertura
+- `go tool cover -html=coverage.out` - Visualizar cobertura
+- `go run cmd/monitor/main.go` - Monitorar recursos do sistema
+- `go run cmd/metrics/main.go` - Visualizar métricas de performance
+
+## Comandos de Otimização
+- `go build -ldflags="-s -w"` - Compilar com otimizações
+- `upx --best` - Comprimir binário
+- `go tool compile -N -l` - Compilar sem otimizações
+- `go tool objdump` - Analisar binário
+- `go run cmd/optimize/main.go` - Otimizar configurações
+- `go run cmd/benchmark/main.go` - Testar performance
+
+## Comandos de Hardware
+- `go run cmd/hardware/main.go` - Detectar hardware
+- `go run cmd/benchmark/main.go` - Testar performance
+- `go run cmd/monitor/main.go` - Monitorar recursos
+- `go run cmd/optimize/main.go` - Otimizar configurações
+- `go run cmd/detect/main.go` - Detectar recursos disponíveis
+- `go run cmd/analyze/main.go` - Analisar performance
+
+## Comandos de WebAssembly
+- `go run cmd/wasm/main.go` - Compilar WebAssembly
+- `go run cmd/wasm/serve.go` - Servir aplicação WebAssembly
+- `go run cmd/wasm/build.go` - Construir binário WebAssembly
+- `go run cmd/wasm/test.go` - Testar aplicação WebAssembly
+- `go run cmd/wasm/optimize.go` - Otimizar binário WebAssembly
+- `go run cmd/wasm/analyze.go` - Analisar performance WebAssembly
+
+## Comandos de Modelos
+- `go run cmd/models/download.go` - Baixar modelos do Hugging Face
+- `go run cmd/models/convert.go` - Converter modelos para ONNX
+- `go run cmd/models/optimize.go` - Otimizar modelos
+- `go run cmd/models/test.go` - Testar modelos
+- `go run cmd/models/benchmark.go` - Testar performance dos modelos
+- `go run cmd/models/analyze.go` - Analisar modelos
