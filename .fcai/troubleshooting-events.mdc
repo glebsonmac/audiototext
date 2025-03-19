@@ -3,7 +3,45 @@ description: when having trouble to solve a problem make sure
 globs: 
 alwaysApply: true
 ---
-# Quando encontrar muitos erros para executar um script
-- Garanta que você esteja utilizando docker compose exec <container> <command>
-- Nunca faça upgrade ou downgrade de bibliotecas perguntar antes
-- Verifique se você já não fez algo similar antes
+---
+description: Quando encontrar problemas durante o desenvolvimento
+globs: **/*
+alwaysApply: true
+---
+# Ao encontrar problemas durante o desenvolvimento
+
+## Problemas de Hardware
+- Verifique a disponibilidade de recursos (CPU, GPU, memória)
+- Monitore o uso de recursos em tempo real
+- Implemente fallbacks para sistemas com recursos limitados
+- Ajuste parâmetros de processamento conforme necessário
+
+## Problemas de WebAssembly
+- Verifique a compatibilidade do navegador
+- Monitore o uso de memória do WASM
+- Verifique a comunicação entre WASM e JavaScript
+- Implemente fallbacks para navegadores não suportados
+
+## Problemas de gRPC
+- Verifique a conexão com o servidor
+- Monitore a latência da comunicação
+- Implemente reconexão automática
+- Verifique o formato dos dados transmitidos
+
+## Problemas de ONNX Runtime
+- Verifique a compatibilidade do modelo
+- Monitore o uso de memória
+- Implemente fallback para CPU quando necessário
+- Verifique a versão do ONNX Runtime
+
+## Problemas de Áudio
+- Verifique a configuração do dispositivo de áudio
+- Monitore a qualidade do áudio capturado
+- Implemente tratamento de ruído
+- Verifique a taxa de amostragem
+
+## Problemas de Performance
+- Identifique gargalos no processamento
+- Otimize o uso de recursos
+- Implemente cache quando apropriado
+- Monitore métricas de performance
