@@ -3,11 +3,6 @@ description: Convenções e práticas para testes automatizados em Go
 globs: **/*_test.go
 alwaysApply: true
 ---
----
-description: Convenções e práticas para testes automatizados em Go
-globs: **/*_test.go
-alwaysApply: true
----
 # Ao trabalhar com testes automatizados em Go
 
 ## Estrutura e Organização
@@ -95,3 +90,4 @@ alwaysApply: true
   - Hardware detection
   - WebAssembly runtime
   - Model downloader
+  .

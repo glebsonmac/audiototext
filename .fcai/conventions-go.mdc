@@ -3,11 +3,6 @@ description: Convenções de código e práticas de desenvolvimento
 globs: 
 alwaysApply: true
 ---
----
-description: Convenções de código e práticas de desenvolvimento
-globs: 
-alwaysApply: true
----
 ## Convenções para Go
 
 ### 1. Estrutura de Pastas e Arquivos
