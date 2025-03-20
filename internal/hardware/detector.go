@@ -2,200 +2,130 @@ package hardware
 
 import (
 	"fmt"
-	"time"
+	"runtime"
 
-	"github.com/pkg/errors"
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/shirou/gopsutil/v3/cpu"
 	"github.com/shirou/gopsutil/v3/mem"
 )
 
-// CPUInfo contém informações sobre a CPU
+// CPUInfo contains information about the CPU
 type CPUInfo struct {
-	Model     string
-	Cores     int32
+	NumCores  int
 	Frequency float64
-	CacheSize int32
+	CacheInfo []CacheInfo
 }
 
-// GPUInfo contém informações sobre uma GPU
+// CacheInfo contains information about CPU cache levels
+type CacheInfo struct {
+	Level int
+	Size  int
+}
+
+// GPUInfo contains information about available GPUs
 type GPUInfo struct {
-	Name      string
-	Memory    uint64
-	HasCUDA   bool
-	HasOpenCL bool
+	HasCUDA         bool
+	HasOpenCL       bool
+	CUDAVersion     string
+	OpenCLVersion   string
+	AvailableMemory int64
 }
 
-// MemoryInfo contém informações sobre a memória
+// MemoryInfo contains system memory information
 type MemoryInfo struct {
-	Total     uint64
-	Used      uint64
-	Free      uint64
-	Available uint64
+	TotalRAM     int64
+	AvailableRAM int64
 }
 
-// Detector é responsável por detectar e monitorar recursos de hardware
+// Detector provides hardware detection capabilities
 type Detector struct {
-	cpuUsage    prometheus.Gauge
-	memoryUsage prometheus.Gauge
-	memoryTotal prometheus.Gauge
+	cpuInfo    []cpu.InfoStat
+	memoryInfo *mem.VirtualMemoryStat
 }
 
-// NewDetector cria um novo detector de hardware
+// NewDetector creates a new hardware detector
 func NewDetector() (*Detector, error) {
-	d := &Detector{
-		cpuUsage: promauto.NewGauge(prometheus.GaugeOpts{
-			Name: "cpu_usage_percent",
-			Help: "Current CPU usage in percent",
-		}),
-		memoryUsage: promauto.NewGauge(prometheus.GaugeOpts{
-			Name: "memory_usage_bytes",
-			Help: "Current memory usage in bytes",
-		}),
-		memoryTotal: promauto.NewGauge(prometheus.GaugeOpts{
-			Name: "memory_total_bytes",
-			Help: "Total memory available in bytes",
-		}),
-	}
-
-	// Initialize memory metrics
-	v, err := mem.VirtualMemory()
+	cpuInfo, err := cpu.Info()
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to get memory info")
-	}
-	d.memoryTotal.Set(float64(v.Total))
-
-	return d, nil
-}
-
-// Start inicia o monitoramento dos recursos de hardware
-func (d *Detector) Start() error {
-	// Update metrics immediately
-	if err := d.updateMetrics(); err != nil {
-		return err
+		return nil, fmt.Errorf("failed to get CPU info: %v", err)
 	}
 
-	// Start monitoring in background
-	go func() {
-		ticker := time.NewTicker(1 * time.Second)
-		defer ticker.Stop()
-
-		for range ticker.C {
-			if err := d.updateMetrics(); err != nil {
-				fmt.Printf("Error updating metrics: %v\n", err)
-			}
-		}
-	}()
-
-	return nil
-}
-
-// updateMetrics atualiza todas as métricas de hardware
-func (d *Detector) updateMetrics() error {
-	// Update CPU usage
-	cpuPercent, err := cpu.Percent(0, false)
+	memInfo, err := mem.VirtualMemory()
 	if err != nil {
-		return errors.Wrap(err, "failed to get CPU usage")
-	}
-	if len(cpuPercent) > 0 {
-		d.cpuUsage.Set(cpuPercent[0])
+		return nil, fmt.Errorf("failed to get memory info: %v", err)
 	}
 
-	// Update memory usage
-	v, err := mem.VirtualMemory()
-	if err != nil {
-		return errors.Wrap(err, "failed to get memory info")
-	}
-	d.memoryUsage.Set(float64(v.Used))
-
-	return nil
-}
-
-// GetCPUInfo retorna informações sobre a CPU
-func (d *Detector) GetCPUInfo() (*CPUInfo, error) {
-	info, err := cpu.Info()
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to get CPU info")
-	}
-
-	if len(info) == 0 {
-		return nil, errors.New("no CPU information available")
-	}
-
-	return &CPUInfo{
-		Model:     info[0].ModelName,
-		Cores:     info[0].Cores,
-		Frequency: info[0].Mhz,
-		CacheSize: int32(info[0].CacheSize),
+	return &Detector{
+		cpuInfo:    cpuInfo,
+		memoryInfo: memInfo,
 	}, nil
 }
 
-// HasCUDAGPU verifica se há uma GPU CUDA disponível
-func (d *Detector) HasCUDAGPU() bool {
-	// TODO: Implement actual CUDA detection
-	return false
+// GetCPUInfo returns CPU information
+func (d *Detector) GetCPUInfo() ([]cpu.InfoStat, error) {
+	return d.cpuInfo, nil
 }
 
-// HasIntelGPU verifica se há uma GPU Intel disponível
-func (d *Detector) HasIntelGPU() bool {
-	// TODO: Implement actual Intel GPU detection
-	return false
+// GetMemoryInfo returns memory information
+func (d *Detector) GetMemoryInfo() (*mem.VirtualMemoryStat, error) {
+	return d.memoryInfo, nil
 }
 
-// GetGPUInfo retorna informações sobre as GPUs disponíveis
-func (d *Detector) GetGPUInfo() []GPUInfo {
-	// TODO: Implement actual GPU detection
-	return []GPUInfo{}
+// GetNumCPUs returns the number of CPUs
+func (d *Detector) GetNumCPUs() int {
+	return runtime.NumCPU()
 }
 
-// GetMemoryInfo retorna informações sobre a memória
-func (d *Detector) GetMemoryInfo() (*MemoryInfo, error) {
-	v, err := mem.VirtualMemory()
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to get memory info")
-	}
-
-	return &MemoryInfo{
-		Total:     v.Total,
-		Used:      v.Used,
-		Free:      v.Free,
-		Available: v.Available,
-	}, nil
+// GetTotalMemory returns the total memory in bytes
+func (d *Detector) GetTotalMemory() uint64 {
+	return d.memoryInfo.Total
 }
 
-// GetHardwareInfo retorna informações gerais sobre o hardware
-func (d *Detector) GetHardwareInfo() (map[string]interface{}, error) {
-	cpuInfo, err := d.GetCPUInfo()
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to get CPU info")
-	}
+// GetAvailableMemory returns the available memory in bytes
+func (d *Detector) GetAvailableMemory() uint64 {
+	return d.memoryInfo.Available
+}
 
-	memInfo, err := d.GetMemoryInfo()
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to get memory info")
-	}
+// GetMemoryUsagePercent returns the memory usage percentage
+func (d *Detector) GetMemoryUsagePercent() float64 {
+	return d.memoryInfo.UsedPercent
+}
 
-	cpuPercent, err := cpu.Percent(0, false)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to get CPU usage")
+// GetCPUModelName returns the CPU model name
+func (d *Detector) GetCPUModelName() string {
+	if len(d.cpuInfo) > 0 {
+		return d.cpuInfo[0].ModelName
 	}
+	return "Unknown"
+}
 
-	info := map[string]interface{}{
+// GetCPUCores returns the number of CPU cores
+func (d *Detector) GetCPUCores() int32 {
+	if len(d.cpuInfo) > 0 {
+		return d.cpuInfo[0].Cores
+	}
+	return 0
+}
+
+// GetCPUFrequency returns the CPU frequency in MHz
+func (d *Detector) GetCPUFrequency() float64 {
+	if len(d.cpuInfo) > 0 {
+		return d.cpuInfo[0].Mhz
+	}
+	return 0
+}
+
+// GetHardwareInfo returns a summary of hardware information
+func (d *Detector) GetHardwareInfo() map[string]interface{} {
+	return map[string]interface{}{
 		"cpu": map[string]interface{}{
-			"model":      cpuInfo.Model,
-			"cores":      cpuInfo.Cores,
-			"usage":      cpuPercent[0],
-			"mhz":        cpuInfo.Frequency,
-			"cache_size": cpuInfo.CacheSize,
+			"model":     d.GetCPUModelName(),
+			"cores":     d.GetCPUCores(),
+			"frequency": d.GetCPUFrequency(),
 		},
 		"memory": map[string]interface{}{
-			"total":     memInfo.Total,
-			"used":      memInfo.Used,
-			"free":      memInfo.Free,
-			"available": memInfo.Available,
+			"total":     d.GetTotalMemory(),
+			"available": d.GetAvailableMemory(),
+			"usage":     d.GetMemoryUsagePercent(),
 		},
 	}
-
-	return info, nil
 }

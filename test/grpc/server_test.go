@@ -10,7 +10,7 @@ import (
 	"github.com/josealecrim/audiototext/test/helpers"
 )
 
-func setupTestServer(t *testing.T) (*grpc.Server, string) {
+func setupTestServer(t *testing.T) (grpc.Server, string) {
 	// Find available port
 	listener, err := net.Listen("tcp", "localhost:0")
 	helpers.AssertNoError(t, err)
@@ -96,7 +96,7 @@ func TestAudioStreaming(t *testing.T) {
 func TestLoadBalancing(t *testing.T) {
 	// Start multiple servers
 	numServers := 3
-	var servers []*grpc.Server
+	var servers []grpc.Server
 	var addrs []string
 
 	for i := 0; i < numServers; i++ {
