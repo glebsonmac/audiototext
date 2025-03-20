@@ -1,0 +1,238 @@
+syntax = "proto3";
+
+package transcription;
+
+option go_package = "github.com/josealecrim/audiototext/pkg/transcription";
+
+// TranscriptionService provides audio transcription capabilities
+service TranscriptionService {
+  // Transcribe performs one-shot transcription of audio data
+  rpc Transcribe(TranscribeRequest) returns (TranscribeResponse) {}
+  
+  // TranscribeStream performs real-time streaming transcription
+  rpc TranscribeStream(stream AudioChunk) returns (stream TranscriptionResult) {}
+  
+  // GetModels returns information about available transcription models
+  rpc GetModels(GetModelsRequest) returns (GetModelsResponse) {}
+  
+  // GetStatus returns the current status of the transcription service
+  rpc GetStatus(GetStatusRequest) returns (GetStatusResponse) {}
+}
+
+// AudioFormat specifies the format of the audio data
+enum AudioFormat {
+  // Default format is 16-bit PCM WAV
+  AUDIO_FORMAT_UNSPECIFIED = 0;
+  // 16-bit PCM WAV
+  AUDIO_FORMAT_WAV = 1;
+  // MP3
+  AUDIO_FORMAT_MP3 = 2;
+  // FLAC
+  AUDIO_FORMAT_FLAC = 3;
+  // OGG
+  AUDIO_FORMAT_OGG = 4;
+}
+
+// TranscriptionConfig contains configuration for the transcription
+message TranscriptionConfig {
+  // Model ID to use for transcription
+  string model_id = 1;
+  
+  // Language code (e.g., "en-US", "pt-BR")
+  string language = 2;
+  
+  // Enable word-level timestamps
+  bool enable_word_timestamps = 3;
+  
+  // Enable speaker diarization
+  bool enable_diarization = 4;
+  
+  // Maximum number of speakers to detect (if diarization is enabled)
+  int32 max_speakers = 5;
+  
+  // Enable profanity filtering
+  bool filter_profanity = 6;
+  
+  // Enable automatic punctuation
+  bool enable_automatic_punctuation = 7;
+  
+  // Enable interim results (for streaming)
+  bool enable_interim_results = 8;
+}
+
+// TranscribeRequest is the request message for one-shot transcription
+message TranscribeRequest {
+  // Audio data to transcribe
+  bytes audio_data = 1;
+  
+  // Format of the audio data
+  AudioFormat format = 2;
+  
+  // Configuration for the transcription
+  TranscriptionConfig config = 3;
+}
+
+// TranscribeResponse is the response message for one-shot transcription
+message TranscribeResponse {
+  // Transcribed text
+  string text = 1;
+  
+  // Confidence score (0-1)
+  float confidence = 2;
+  
+  // Word-level results (if enabled)
+  repeated WordResult words = 3;
+  
+  // Speaker segments (if diarization enabled)
+  repeated SpeakerSegment speakers = 4;
+  
+  // Processing time in seconds
+  float processing_time = 5;
+  
+  // Any errors or warnings that occurred
+  repeated string warnings = 6;
+}
+
+// AudioChunk is a piece of streaming audio data
+message AudioChunk {
+  // Audio data chunk
+  bytes audio_data = 1;
+  
+  // Format of the audio data
+  AudioFormat format = 2;
+  
+  // Configuration for the transcription (only needed in first chunk)
+  TranscriptionConfig config = 3;
+  
+  // Sequence number of the chunk
+  int64 sequence_number = 4;
+  
+  // Whether this is the last chunk
+  bool is_final = 5;
+}
+
+// TranscriptionResult is a streaming transcription result
+message TranscriptionResult {
+  // Transcribed text
+  string text = 1;
+  
+  // Whether this is a final result
+  bool is_final = 2;
+  
+  // Confidence score (0-1)
+  float confidence = 3;
+  
+  // Word-level results (if enabled)
+  repeated WordResult words = 4;
+  
+  // Speaker ID (if diarization enabled)
+  string speaker_id = 5;
+  
+  // Start time of this segment in seconds
+  float start_time = 6;
+  
+  // End time of this segment in seconds
+  float end_time = 7;
+}
+
+// WordResult represents a single transcribed word
+message WordResult {
+  // The word text
+  string word = 1;
+  
+  // Confidence score for this word (0-1)
+  float confidence = 2;
+  
+  // Start time of the word in seconds
+  float start_time = 3;
+  
+  // End time of the word in seconds
+  float end_time = 4;
+  
+  // Speaker ID (if diarization enabled)
+  string speaker_id = 5;
+}
+
+// SpeakerSegment represents a segment of speech from a single speaker
+message SpeakerSegment {
+  // Speaker identifier
+  string speaker_id = 1;
+  
+  // Start time of the segment in seconds
+  float start_time = 2;
+  
+  // End time of the segment in seconds
+  float end_time = 3;
+  
+  // Confidence score for speaker identification (0-1)
+  float confidence = 4;
+}
+
+// GetModelsRequest is the request message for getting available models
+message GetModelsRequest {
+  // Filter by language
+  string language_filter = 1;
+}
+
+// GetModelsResponse is the response message containing available models
+message GetModelsResponse {
+  // List of available models
+  repeated ModelInfo models = 1;
+}
+
+// ModelInfo contains information about a transcription model
+message ModelInfo {
+  // Unique identifier for the model
+  string id = 1;
+  
+  // Display name of the model
+  string name = 2;
+  
+  // Description of the model
+  string description = 3;
+  
+  // Supported languages
+  repeated string languages = 4;
+  
+  // Model size in bytes
+  int64 size = 5;
+  
+  // Whether the model supports streaming
+  bool supports_streaming = 6;
+  
+  // Whether the model supports diarization
+  bool supports_diarization = 7;
+  
+  // Whether the model supports word timestamps
+  bool supports_word_timestamps = 8;
+  
+  // Model version
+  string version = 9;
+}
+
+// GetStatusRequest is the request message for getting service status
+message GetStatusRequest {}
+
+// GetStatusResponse is the response message containing service status
+message GetStatusResponse {
+  // Whether the service is ready to accept requests
+  bool is_ready = 1;
+  
+  // Current load (0-1)
+  float load = 2;
+  
+  // Number of active transcription sessions
+  int32 active_sessions = 3;
+  
+  // Memory usage in bytes
+  int64 memory_usage = 4;
+  
+  // GPU memory usage in bytes (if GPU is available)
+  int64 gpu_memory_usage = 5;
+  
+  // Any active warnings or issues
+  repeated string warnings = 6;
+  
+  // Detailed status information
+  map<string, string> details = 7;
+} 

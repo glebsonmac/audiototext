@@ -1,0 +1,95 @@
+syntax = "proto3";
+
+package transcription;
+
+option go_package = "github.com/josealecrim/audiototext/pkg/transcription";
+
+// Audio format supported by the service
+enum AudioFormat {
+  AUDIO_FORMAT_UNSPECIFIED = 0;
+  AUDIO_FORMAT_WAV = 1;
+  AUDIO_FORMAT_MP3 = 2;
+  AUDIO_FORMAT_OGG = 3;
+  AUDIO_FORMAT_FLAC = 4;
+}
+
+// Configuration for transcription
+message TranscriptionConfig {
+  string model_id = 1;
+  string language = 2;
+  bool enable_diarization = 3;
+  bool enable_punctuation = 4;
+  bool enable_timestamps = 5;
+}
+
+// Request to transcribe audio
+message TranscribeRequest {
+  bytes audio_data = 1;
+  AudioFormat format = 2;
+  TranscriptionConfig config = 3;
+}
+
+// Response from transcription
+message TranscribeResponse {
+  string text = 1;
+  float confidence = 2;
+  repeated Segment segments = 3;
+  map<string, string> metadata = 4;
+}
+
+// Segment of transcribed text with timing information
+message Segment {
+  string text = 1;
+  float start_time = 2;
+  float end_time = 3;
+  string speaker = 4;
+  float confidence = 5;
+}
+
+// Request to get available models
+message GetModelsRequest {}
+
+// Response containing available models
+message GetModelsResponse {
+  repeated Model models = 1;
+}
+
+// Model information
+message Model {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  repeated string languages = 4;
+  int64 size = 5;
+  bool supports_streaming = 6;
+  bool supports_diarization = 7;
+  string version = 8;
+}
+
+// Request to get server status
+message GetStatusRequest {}
+
+// Response containing server status
+message GetStatusResponse {
+  bool is_ready = 1;
+  float load = 2;
+  int32 active_sessions = 3;
+  int64 memory_usage = 4;
+  int64 gpu_memory_usage = 5;
+  map<string, string> details = 6;
+}
+
+// Service definition
+service TranscriptionService {
+  // Transcribe audio to text
+  rpc Transcribe(TranscribeRequest) returns (TranscribeResponse) {}
+
+  // Stream audio for real-time transcription
+  rpc TranscribeStream(stream TranscribeRequest) returns (stream TranscribeResponse) {}
+
+  // Get available models
+  rpc GetModels(GetModelsRequest) returns (GetModelsResponse) {}
+
+  // Get server status
+  rpc GetStatus(GetStatusRequest) returns (GetStatusResponse) {}
+} 
